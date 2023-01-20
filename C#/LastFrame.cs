@@ -26,6 +26,9 @@ class LastFrame : Frame
     public override string ToString()
     {
         string  buffer = "";
+        
+        if (!this.isPlayed) return "     ";
+
         if (this.isSpare())
         {
             buffer+=base.ToString(); //here ToString must be called explicitily because base seems to be seen as a keyword rather than a regular object.

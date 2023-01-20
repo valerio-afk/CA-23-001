@@ -1,16 +1,16 @@
 import java.util.Arrays;
 
-class Game
+public class Game
 {
     private Frame frames[];
     private String player;
     
     public Game ()
     {
-        frames = new Frame[Frame.N_FRAMES];
+        this.frames = new Frame[Frame.N_FRAMES];
 
-        for(byte i = 0;i<(Frame.N_FRAMES-1);i++) this.frames[i] = new Frame((byte)(i+1));
-        frames[Frame.N_FRAMES-1] = new LastFrame();
+        for(byte i = 0;i<(Frame.N_FRAMES-1);i++) this.frames[i] = new Frame(i+1);
+        this.frames[Frame.N_FRAMES-1] = new LastFrame();
 
         this.player="Player";
     }
@@ -134,7 +134,7 @@ class Game
 
         for (Frame current_frame : this.frames)
         {
-            frame_line1.append(current_frame.toString());
+            frame_line1.append(current_frame);
             frame_line1.append("|");
 
             if (current_frame.getFrameNumber() == Frame.N_FRAMES) frame_line2.append(String.format("%5d",current_frame.getScore()));
@@ -145,7 +145,7 @@ class Game
         }
 
         String frames = frame_line1.toString();
-        String dashed_line = "-".repeat(frames.length()+1);
+        String dashed_line = "+"+"-".repeat(frames.length()-1)+"+";
         String player_line = this.getPlayer();
 
         System.out.println(dashed_line);
@@ -167,7 +167,7 @@ class Game
 
 
         System.out.println(dashed_line);
-        System.out.println("|"+frame_line2.toString());
+        System.out.println("|"+frame_line2);
         
         System.out.println(dashed_line);
     }

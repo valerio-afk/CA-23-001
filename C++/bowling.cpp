@@ -57,14 +57,13 @@ class Frame
         {
             this->n = 0;
             this->score = 0;
-        }
-
-        Frame (frame_t n)
-        {
-            this->n = n;
-            this->score = 0;
 
             this->rolls = vector<frame_t>(2);
+        }
+
+        Frame (frame_t n) : Frame()
+        {
+            this->n = n;
         }
 
         void setRoll(frame_t idx, frame_t value)
@@ -92,9 +91,7 @@ class Frame
 
         virtual void calculateScore(frame_t *next_rolls)
         {
-            frame_t frame_score = 0;
-
-            frame_score += this->rolls[0] + this->rolls[1]; 
+            frame_t frame_score = this->rolls[0] + this->rolls[1];
 
             if (this->isStrike()) frame_score += next_rolls[0] + next_rolls[1]; 
             else if (this->isSpare()) frame_score += next_rolls[0]; 
@@ -118,7 +115,7 @@ class Frame
         }
 
     protected:
-        char printRoll(frame_t idx)
+        virtual char printRoll(frame_t idx)
         {
             if ((idx != 1) && (this->getRoll(idx) == PINS)) return STRIKE_SYMBOL;
             //if it is required to get the character of the 2nd roll and we have a strike, we just print an empty space
@@ -179,7 +176,7 @@ class LastFrame : public Frame
         }
 
     protected:
-        char printRoll(frame_t idx)
+        virtual char printRoll(frame_t idx)
         {
             if (this->getRoll(idx) == 0) return NO_POINTS_SYMBOL;
             else if (this->getRoll(idx) == PINS) return STRIKE_SYMBOL;
@@ -319,7 +316,9 @@ void Game::calculateScore()
             next_rolls[0] = this->getFrame(i+1)->getRoll(0);
 
             if (this->getFrame(i+1)->getFrameNumber() < N_FRAMES)
-                next_rolls[1] = this->getFrame(i+1)->isStrike() ? this->getFrame(i+2)->getRoll(0) : this->getFrame(i+1)->getRoll(1);
+                next_rolls[1] = this->getFrame(i+1)->isStrike() ? 
+                                    this->getFrame(i+2)->getRoll(0) : 
+                                    this->getFrame(i+1)->getRoll(1);
             else next_rolls[1] = this->getFrame(i+1)->getRoll(1);
         }
 

@@ -3,6 +3,7 @@ class Frame
     protected int frameNumber;
     protected int []rolls;
     private int score;
+    private bool played;
 
     // Differently than java, constants don't require to be explictly static. they already are
     public const int PINS = 10;
@@ -17,6 +18,13 @@ class Frame
         this.frameNumber = 0;
         this.score = 0;
         this.rolls = new int[2];
+        this.played=false;
+    }
+
+    public bool isPlayed
+    {
+        get => this.played;
+        set => this.played = true;
     }
 
     public Frame(int n) : this() //similar syntax as in C++
@@ -54,22 +62,26 @@ class Frame
 
     public bool isStrike() {return this[0] == PINS;}
     public bool isSpare() {return !this.isStrike() && ((this[0]+this[1])==PINS);}
+    public bool isOpen() {return ((this[0]+this[1])<PINS);}
 
     //Differently than java, methods that can be overridden need to be specified virtual
     //We saw something similar to this in C++
-    public virtual void calculateScore(int []next_rolls)
+    public virtual void calculateScore(int []?next_rolls)
     {
         int frame_score = 0;
 
         frame_score += this[0] + this[1]; 
 
-        if (this.isStrike()) frame_score += next_rolls[0] + next_rolls[1]; 
-        else if (this.isSpare()) frame_score += next_rolls[0]; 
+        if (next_rolls!=null)
+        {
+            if (this.isStrike()) frame_score += next_rolls[0] + next_rolls[1]; 
+            else if (this.isSpare()) frame_score += next_rolls[0]; 
+        }
 
         this.Score = frame_score;
     }
 
-    public virtual void calculateScore(Frame previousFrame, int []next_rolls)
+    public virtual void calculateScore(Frame previousFrame, int []?next_rolls)
     {
         this.calculateScore(next_rolls);
         this.Score += previousFrame.Score;
@@ -77,7 +89,8 @@ class Frame
 
     public override string ToString()
     {
-        return String.Format("{0} {1}",this.printRoll(0), this.printRoll(1));
+        if (this.isPlayed) return String.Format("{0} {1}",this.printRoll(0), this.printRoll(1));
+        else return "   ";
     }
 
     protected virtual char printRoll(int idx)

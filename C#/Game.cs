@@ -1,9 +1,39 @@
 using System;
-class Game
+using System.Collections;
+
+class Game : IEnumerable, IEnumerator
 {
     private Frame []frames;
     private string player;
-    
+    private int enum_index;
+
+    IEnumerator IEnumerable.GetEnumerator(){
+        this.ResetIterator();
+        return this;
+    }
+
+    bool IEnumerator.MoveNext()
+    {
+        enum_index++;
+
+        return enum_index < Frame.N_FRAMES;
+    }
+
+    void IEnumerator.Reset()
+    {
+        this.ResetIterator();
+    }
+
+    object IEnumerator.Current
+    {
+        get => this.frames[this.enum_index];
+    }
+
+    protected void ResetIterator()
+    {
+        enum_index = -1;
+    }
+
     public Game ()
     {
         frames = new Frame[Frame.N_FRAMES];
@@ -12,6 +42,7 @@ class Game
         frames[Frame.N_FRAMES-1] = new LastFrame();
 
         this.player="Player";
+        this.ResetIterator();
     }
 
     public Game (string sequence) : this() //similar syntax as in C++
@@ -28,6 +59,7 @@ class Game
     public Frame this[int idx]
     {
         get => this.frames[idx];
+        private set => this.frames[idx] = value;
     }
 
     protected void readSequence(string sequence)
@@ -48,6 +80,7 @@ class Game
                     r++;
                     if (r>1)
                     {
+                        this[f].isPlayed = true;
                         f++;
                         r=0;
                     }
@@ -57,6 +90,7 @@ class Game
                     if ((r==0) && Game.is_strike(c)) 
                     {
                         this[f][0] = Frame.PINS;
+                        this[f].isPlayed = true;
                         f++;
                     }
                     else
@@ -65,6 +99,7 @@ class Game
                         {
                             
                             this[f][1] = Frame.PINS - this[f][0];
+                            this[f].isPlayed = true;
 
                             f++; 
                             r=0;
@@ -89,7 +124,11 @@ class Game
                     
                 }
 
-                r++; 
+                r++;
+
+                if ((this[f][0]==Frame.PINS)&& (r==3)) this[f].isPlayed = true;
+                else if( ((this[f][0]+this[f][1])==Frame.PINS) && (r==3)) this[f].isPlayed = true;
+                else if (r==2) this[f].isPlayed = true;
             }
         }
     }
@@ -100,42 +139,60 @@ class Game
         set => this.player = value;
     }
 
+    protected int[]? getNextRolls(int idx)
+    {
+        if (!this[idx].isPlayed || this[idx].isOpen() || (idx==(Frame.N_FRAMES-1)) || (!this[idx+1].isPlayed) ) return null;
+        else{
+            int [] next_rolls = {0,0};
+            next_rolls[0] = this[idx+1][0];
+
+            if (this[idx].isStrike()) 
+            {
+                if (this[idx+1].isStrike() && (this[idx+1].FrameNumber<Frame.N_FRAMES))
+                {
+                    if (this[idx+2].isPlayed) next_rolls[1] = this[idx+2][0];
+                    else return null;
+                }
+                else next_rolls[1] = this[idx+1][1];
+            }
+            return next_rolls;
+        }
+    }
+
     public void calculateScore()
     {
-        int [] next_rolls = new int[2]; 
+        int[]? next_rolls = null;
 
         for (int i=0;i<Frame.N_FRAMES;i++)
         {
             Frame current_frame = this[i];
-            Array.Fill(next_rolls,0); //similar to memset in C/C++
-
-            if (current_frame.FrameNumber < Frame.N_FRAMES) 
-            {
-                next_rolls[0] = this[i+1][0];
-
-                if (this[i+1].FrameNumber < Frame.N_FRAMES)
-                    next_rolls[1] = this[i+1].isStrike() ? this[i+2][0] : this[i+1][1];
-                else next_rolls[1] = this[i+1][1];                
-            }
+            next_rolls = this.getNextRolls(i);
             
             if (current_frame.FrameNumber > 1) current_frame.calculateScore(this[i-1],next_rolls);
             else current_frame.calculateScore(next_rolls);
         }
     }
 
-    public void printGame()
+    public override string ToString()
     {
+        string final_string = "";
+
         string frame_line1 = "";
         string frame_line2 = "";
         
 
-        foreach (Frame current_frame in this.frames)
+        foreach (Frame current_frame in this)
         {
             frame_line1 += current_frame;
             frame_line1 += "|";
 
-            if (current_frame.FrameNumber == Frame.N_FRAMES) frame_line2+= String.Format("{0,5}",current_frame.Score);
-            else frame_line2+= String.Format("{0,3}",current_frame.Score);
+            if (current_frame.isPlayed && (current_frame.isOpen() || (current_frame.FrameNumber == Frame.N_FRAMES) || (this.getNextRolls(current_frame.FrameNumber-1)!=null)))
+            {
+                if (current_frame.FrameNumber == Frame.N_FRAMES) frame_line2+= String.Format("{0,5}",current_frame.Score);
+                else frame_line2+= String.Format("{0,3}",current_frame.Score);
+                
+            }
+            else frame_line2+=new string(' ',current_frame.FrameNumber == Frame.N_FRAMES?5:3);
 
             frame_line2 += "|";
 
@@ -143,33 +200,43 @@ class Game
 
         //Explicit call to ToString is not necessary. The runtime does this for us. Sometimes it also work in Java
         string frames = frame_line1;//.ToString(); 
-        string dashed_line = new string('-',frames.Length+1);
+        string dashed_line = "+" + new string('-',frames.Length-1)+"+\n";
         string player_line = this.Player;
 
         
 
-        Console.WriteLine(dashed_line);
+        final_string += dashed_line;
         
         int l_padding = (frames.Length / 2) - (this.Player.Length / 2);
         int r_padding = frames.Length - this.Player.Length - l_padding-1;
        
 
-        Console.WriteLine("|"+ new string(' ',l_padding) +player_line+ new string(' ',r_padding) +"|");
+        final_string += "|"+ new string(' ',l_padding) +player_line+ new string(' ',r_padding) +"|\n";
         
         
         //print the top row of the scoring board - just the number of frames
-        for(int i=0;i<Frame.N_FRAMES;i++) Console.Write("| "+(i+1)+" ");
-        Console.WriteLine(" |");
+        for(int i=0;i<Frame.N_FRAMES;i++) final_string +="| "+(i+1)+" ";
+        final_string += " |\n";
+
         
         
-        Console.WriteLine(dashed_line);
-        Console.WriteLine("|"+frames);
+        
+        final_string += dashed_line;
+        final_string += "|"+frames+"\n";
 
 
-        Console.WriteLine(dashed_line);
-        Console.WriteLine("|"+frame_line2);
+        final_string += dashed_line;
+        final_string += "|"+frame_line2+"\n";
         
-        Console.WriteLine(dashed_line);
+        final_string += dashed_line;
+
+
+        return final_string;
+    }
+
+    public void PrintGame()
+    {
+        Console.Write(this);
     }
 
     public static bool is_strike(char c) {return ((c == Frame.STRIKE_SYMBOL) || (c==Frame.STRIKE_SYMBOL_LC)); }

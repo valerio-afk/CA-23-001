@@ -1,11 +1,16 @@
 public class Bowling 
 {
-    //C# calls the entrypoint Main instead of main (degustibus)
+    //C# calls the entrypoint Main instead of main (de gustibus)
     public static void Main(string [] args)
     {
-        string my_game = "9-XX9-7/XX8-6/XX9"; 
-        Game valerio = new Game(my_game,"Valerio"); 
+        if (args.Length>=1)
+        {
+            string my_game = args[0];
+            Game valerio = new Game(my_game,"Valerio");
 
-        valerio.printGame();
+            Console.WriteLine(valerio);
+
+            
+        }else Console.WriteLine("Devi passare una partita da linea di comando");
     }
 }
