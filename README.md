@@ -94,7 +94,7 @@ Oltre alle cose viste nei video precedenti, in questo video imparerete:
 
 ## Python
 
-📹Link al video:
+📹Link al video: https://youtu.be/5xooO5nsiKQ
 
 Oltre alle cose viste nei video precedenti, in questo video imparerete:
 
@@ -108,6 +108,19 @@ Oltre alle cose viste nei video precedenti, in questo video imparerete:
 - Generatori e `yield`
 
 Inoltre, in Python, ho rifatto l'implementazione da capo, facendo una soluzione al problema differente fatta con gli altri linguaggi di programmazione.
+
+## Rust
+
+📹Link al video: https://youtu.be/0h5IYbbU5iQ
+
+Oltre alle cose viste nei video precedenti, questo video imparerete:
+
+- Variabili mutabili e immutabili
+- Ownership & Borrowing
+- Blocchi di istruzione usati come espressione
+- Tratti
+- Moduli
+- Closure
 
 # Contatti
 
